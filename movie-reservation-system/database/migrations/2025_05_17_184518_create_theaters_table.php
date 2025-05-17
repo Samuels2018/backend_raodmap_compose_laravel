@@ -9,8 +9,11 @@ return new class extends Migration {
    * Run the migrations.
    */
   public function up(): void {
-    Schema::table('users', function (Blueprint $table) {
-      $table->enum('role', ['admin', 'user'])->default('user');
+    Schema::create('theaters', function (Blueprint $table) {
+      $table->id();
+      $table->string('name');
+      $table->integer('capacity');
+      $table->timestamps();
     });
   }
 
@@ -18,8 +21,6 @@ return new class extends Migration {
    * Reverse the migrations.
    */
   public function down(): void {
-    Schema::table('users', function (Blueprint $table) {
-        //
-    });
+    Schema::dropIfExists('theaters');
   }
 };

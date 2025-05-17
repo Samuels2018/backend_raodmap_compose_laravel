@@ -9,8 +9,10 @@ return new class extends Migration {
    * Run the migrations.
    */
   public function up(): void {
-    Schema::table('users', function (Blueprint $table) {
-      $table->enum('role', ['admin', 'user'])->default('user');
+    Schema::create('movie_genre', function (Blueprint $table) {
+      $table->foreignId('movie_id')->constrained()->onDelete('cascade');
+      $table->foreignId('genre_id')->constrained()->onDelete('cascade');
+      $table->primary(['movie_id', 'genre_id']);
     });
   }
 
@@ -18,8 +20,6 @@ return new class extends Migration {
    * Reverse the migrations.
    */
   public function down(): void {
-    Schema::table('users', function (Blueprint $table) {
-        //
-    });
+    Schema::dropIfExists('movie_genre');
   }
 };

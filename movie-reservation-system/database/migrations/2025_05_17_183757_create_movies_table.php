@@ -9,8 +9,13 @@ return new class extends Migration {
    * Run the migrations.
    */
   public function up(): void {
-    Schema::table('users', function (Blueprint $table) {
-      $table->enum('role', ['admin', 'user'])->default('user');
+    Schema::create('movies', function (Blueprint $table) {
+      $table->id();
+      $table->string('title');
+      $table->text('description');
+      $table->string('poster_image');
+      $table->integer('duration_minutes');
+      $table->timestamps();
     });
   }
 
@@ -18,8 +23,6 @@ return new class extends Migration {
    * Reverse the migrations.
    */
   public function down(): void {
-    Schema::table('users', function (Blueprint $table) {
-        //
-    });
+    Schema::dropIfExists('movies');
   }
 };

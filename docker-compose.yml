@@ -1,0 +1,99 @@
+version: "3.9"
+services:
+  dbPostgres:
+    image: postgres:latest
+    container_name: dbPostgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api-ecomerce:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api-ecomerce
+    environment:
+      - DB_HOST=dbPostgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=postgres
+    ports:
+      - "8080:8080"
+    depends_on:
+      dbPostgres:
+        condition: service_healthy
+    volumes:
+      - .:/app
+
+  image-processing:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: image-processing
+    environment:
+      - DB_HOST=dbPostgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=postgres
+    ports:
+      - "8081:8081"
+    depends_on:
+      dbPostgres:
+        condition: service_healthy
+    volumes:
+      - .:/app
+
+  movie-reservation-system:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: movie-reservation-system
+    environment:
+      - DB_HOST=dbPostgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=postgres
+    ports:
+      - "8082:8082"
+    depends_on:
+      dbPostgres:
+        condition: service_healthy
+    volumes:
+      - .:/app
+
+  workout-tracker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: workout-tracker
+    environment:
+      - DB_HOST=dbPostgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=postgres
+    ports:
+      - "8083:8083"
+    depends_on:
+      dbPostgres:
+        condition: service_healthy
+    volumes:
+      - .:/app
+
+networks:
+  default:
+    driver: bridge
+  
