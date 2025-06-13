@@ -7,8 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Exercise extends Model {
   use HasFactory;
-
-  protected $fileable = [
+  protected $fillable = [
     'name',
     'description',
     'category',

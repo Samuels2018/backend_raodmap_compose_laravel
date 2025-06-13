@@ -9,11 +9,12 @@ use Illuminate\Support\Facades\Validator;
 
 
 class AuthController extends Controller {
-  public function __construct () {
+  /*public function __construct () {
     $this->middleware('auth:api', ['except' => ['login', 'register']]);
-  }
+  }*/
 
   private function ValidateRegister ($data) {
+
     return Validator::make($data, [
       'name' => 'required|string|max:255',
       'email' => 'required|string|email|max:255|unique:users',
@@ -44,10 +45,14 @@ class AuthController extends Controller {
       return response()->json($validator->errors()->toJson(), 400);
     }
 
-    $user = User::create(array_merge(
-      $validator->validated(),
-      ['password' => bcrypt($request->password)]
-    ));
+    try{
+      print_r($request->password);
+
+      $user = User::create($validator->validated());
+    } catch (\Exception $e) {
+      print_r($e->getMessage());
+      return response()->json(['error' => 'User registration failed'], 500);
+    }
 
     return response()->json([
       'message' => 'User successfully registered',
@@ -56,6 +61,7 @@ class AuthController extends Controller {
   }
 
   public function login (Request $request) {
+    print_r($request->all());
     $validator = $this->validateLogin($request->all());
 
     if ($validator->fails()) {

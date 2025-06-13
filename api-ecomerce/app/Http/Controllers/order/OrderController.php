@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\order;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\order\Order;
 use App\Models\order\OrderItem;

@@ -10,7 +10,7 @@ use App\Models\Workout;
 class WorkoutLog extends Model {
   use HasFactory;
 
-  protected $fileable = [
+  protected $fillable = [
     'user_id',
     'workout_id',
     'completed_at',

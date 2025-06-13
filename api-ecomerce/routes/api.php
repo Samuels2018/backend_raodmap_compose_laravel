@@ -29,13 +29,17 @@ Route::group(['middleware' => 'auth:api'], function() {
     Route::get('products', [ProductController::class, 'index']);
     Route::get('products/{id}', [ProductController::class, 'show']);
     Route::get('products/search', [ProductController::class, 'search']);
+
+    Route::post('products', [ProductController::class, 'store']);
+    Route::put('products/{id}', [ProductController::class, 'update']);
+    Route::delete('products/{id}', [ProductController::class, 'destroy']);
     
     // Admin-only product routes
-    Route::group(['middleware' => 'admin'], function() {
-        Route::post('products', [ProductController::class, 'store']);
+    /*Route::group(['middleware' => 'admin'], function() {
+        Route::post('products/create', [ProductController::class, 'store']);
         Route::put('products/{id}', [ProductController::class, 'update']);
         Route::delete('products/{id}', [ProductController::class, 'destroy']);
-    });
+    });*/
 
     // Cart
     Route::get('cart', [CartController::class, 'show']);

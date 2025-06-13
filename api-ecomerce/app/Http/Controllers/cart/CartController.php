@@ -11,115 +11,114 @@ use Validator;
 use Auth;
 
 class CartController extends Controller {
-    public function __construct () {
-        $this->middleware('auth:api');
+  /*public function __construct () {
+    $this->middleware('auth:api');
+  }*/
+
+  public function show () {
+    $user = Auth::user();
+    $cart = $user->cart()->with('items.product')->first();
+
+    if (!$cart) {
+      return response()->json(['message' => 'Cart not found'], 404);
     }
 
-    public function show () {
-        $user = Auth::user();
-        $cart = $user->cart()->with('items.product')->first();
+    return response()->json($cart);
+  }
 
-        if (!$cart) {
-            return response()->json(['message' => 'Cart not found'], 404);
-        }
+  public function addItem (Request $request) {
+    $validator = Validator::make($request->all(), [
+      'product_id' => 'required|exists:products,id',
+      'quantity' => 'required|integer|min:1'
+    ]);
 
-        return response()->json($cart);
+    if ($validator->fails()) {
+      return response()->json($validator->errors(), 400);
     }
 
-    public function addItem (Request $request) {
-        $validator = Validator::make($request->all(), [
-            'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:1'
-        ]);
+    print_r($request->all());
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 400);
-        }
+    $user = Auth::user();
+    $cart = Cart::firstOrCreate(['user_id' => $user->id]);
 
-        $user = Auth::user();
-        $cart = $user->cart()->firstOrCreate();
+    $product = Product::find($request->product_id);
 
-        $product = Product::find($request->product_id);
-
-        $existingItem = $cart->items()->where('product_id', $product->id)->first();
-
-        if ($existingItem) {
-            $existingItem->quantity += $request->quantity;
-            $existingItem->save();
-        } else {
-            $cart->items()->create([
-                'product_id' => $product->id,
-                'quantity' => $request->quantity
-            ]);
-        }
-
-        return response()->json([
-            'message' => 'Item added to cart',
-            'cart' => $cart->load('items.product')
-        ]);
+    try {
+      $existingItem = $cart->item()->where('product_id', $product->id)->first();
+      $existingItem->quantity += $request->quantity;
+      $existingItem->save();
+    } catch (\Exception $e) {
+      print_r($e->getMessage());
+      $cart->item()->create([
+        'product_id' => $product->id,
+        'quantity' => $request->quantity
+      ]);
     }
 
+    return response()->json([
+      'message' => 'Item added to cart',
+      'cart' => $cart->load('items.product')
+    ]);
+  }
 
 
-    public function updateItem(Request $request, $itemId)
-    {
-        $validator = Validator::make($request->all(), [
-            'quantity' => 'required|integer|min:1'
-        ]);
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 400);
-        }
+  public function updateItem(Request $request, $itemId) {
+    $validator = Validator::make($request->all(), [
+      'quantity' => 'required|integer|min:1'
+    ]);
 
-        $user = Auth::user();
-        $cart = $user->cart()->first();
-
-        if (!$cart) {
-            return response()->json(['message' => 'Cart not found'], 404);
-        }
-
-        $item = $cart->items()->where('id', $itemId)->first();
-
-        if (!$item) {
-            return response()->json(['message' => 'Item not found in cart'], 404);
-        }
-
-        $item->update(['quantity' => $request->quantity]);
-
-        return response()->json($cart->load('items.product'));
+    if ($validator->fails()) {
+      return response()->json($validator->errors(), 400);
     }
 
-    public function removeItem($itemId)
-    {
-        $user = Auth::user();
-        $cart = $user->cart()->first();
+    $user = Auth::user();
+    $cart = $user->cart()->first();
 
-        if (!$cart) {
-            return response()->json(['message' => 'Cart not found'], 404);
-        }
-
-        $item = $cart->items()->where('id', $itemId)->first();
-
-        if (!$item) {
-            return response()->json(['message' => 'Item not found in cart'], 404);
-        }
-
-        $item->delete();
-
-        return response()->json($cart->load('items.product'));
+    if (!$cart) {
+      return response()->json(['message' => 'Cart not found'], 404);
     }
 
-    public function clear()
-    {
-        $user = Auth::user();
-        $cart = $user->cart()->first();
+    $item = $cart->items()->where('id', $itemId)->first();
 
-        if (!$cart) {
-            return response()->json(['message' => 'Cart not found'], 404);
-        }
-
-        $cart->items()->delete();
-
-        return response()->json(['message' => 'Cart cleared successfully']);
+    if (!$item) {
+      return response()->json(['message' => 'Item not found in cart'], 404);
     }
+
+    $item->update(['quantity' => $request->quantity]);
+
+    return response()->json($cart->load('items.product'));
+  }
+
+  public function removeItem($itemId) {
+    $user = Auth::user();
+    $cart = $user->cart()->first();
+
+    if (!$cart) {
+      return response()->json(['message' => 'Cart not found'], 404);
+    }
+
+    $item = $cart->items()->where('id', $itemId)->first();
+
+    if (!$item) {
+      return response()->json(['message' => 'Item not found in cart'], 404);
+    }
+
+    $item->delete();
+
+    return response()->json($cart->load('items.product'));
+  }
+
+  public function clear() {
+    $user = Auth::user();
+    $cart = $user->cart()->first();
+
+    if (!$cart) {
+      return response()->json(['message' => 'Cart not found'], 404);
+    }
+
+    $cart->items()->delete();
+
+    return response()->json(['message' => 'Cart cleared successfully']);
+  }
 }

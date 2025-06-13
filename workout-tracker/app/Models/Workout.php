@@ -11,7 +11,7 @@ use App\Models\WorkoutLog;
 class Workout extends Model {
   use HasFactory;
 
-  protected $fileable = [
+  protected $fillable = [
     'user_id',
     'title',
     'description',

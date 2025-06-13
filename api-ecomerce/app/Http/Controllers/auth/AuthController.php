@@ -10,9 +10,9 @@ use App\Models\User;
 use Validator;
 
 class AuthController extends Controller {
-  public function __construct () {
+  /*public function __construct () {
     $this->middleware('auth:api', ['except' => ['login', 'register']]);
-  }
+  }*/
 
 
   public function login (Request $request) {
@@ -24,6 +24,9 @@ class AuthController extends Controller {
     if ($validator->fails()) {
       return response()->json($validator->errors(), 422);
     }
+
+    print_r($validator->validated());
+
 
     if (!$token = auth()->attempt($validator->validated())) {
       return response()->json(['error' => 'Unauthorized'], 401);
