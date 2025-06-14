@@ -2,17 +2,23 @@ version: "3.9"
 services:
   dbPostgres:
     image: postgres:latest
-    container_name: dbPostgres
+    container_name: postgres
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydb
+      APP_USER: sam_local
+      APP_PASSWORD: passwd123
+      POSTGRES_MULTIPLE_DATABASES: "expense_tracker,personalblog"
     ports:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+    networks:
+      - default
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -21,79 +27,66 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    volumes:
+      - ./api-ecomerce:/app
     container_name: api-ecomerce
-    environment:
-      - DB_HOST=dbPostgres
-      - DB_PORT=5432
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_NAME=postgres
     ports:
       - "8080:8080"
     depends_on:
       dbPostgres:
         condition: service_healthy
-    volumes:
-      - .:/app
+    networks:
+      - default
 
   image-processing:
     build:
       context: .
       dockerfile: Dockerfile
+    volumes:
+      - ./image-processing:/app
     container_name: image-processing
-    environment:
-      - DB_HOST=dbPostgres
-      - DB_PORT=5432
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_NAME=postgres
     ports:
       - "8081:8081"
     depends_on:
       dbPostgres:
         condition: service_healthy
-    volumes:
-      - .:/app
+    networks:
+      - default
 
   movie-reservation-system:
     build:
       context: .
       dockerfile: Dockerfile
+    volumes:
+      - ./movie-reservation-system:/app
     container_name: movie-reservation-system
-    environment:
-      - DB_HOST=dbPostgres
-      - DB_PORT=5432
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_NAME=postgres
     ports:
       - "8082:8082"
     depends_on:
       dbPostgres:
         condition: service_healthy
-    volumes:
-      - .:/app
+    networks:
+      - default
 
   workout-tracker:
     build:
       context: .
       dockerfile: Dockerfile
+    volumes:
+      - ./workout-tracker:/app
     container_name: workout-tracker
-    environment:
-      - DB_HOST=dbPostgres
-      - DB_PORT=5432
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_NAME=postgres
     ports:
       - "8083:8083"
     depends_on:
       dbPostgres:
         condition: service_healthy
-    volumes:
-      - .:/app
-
+    networks:
+      - default
 networks:
   default:
     driver: bridge
+
+volumes:
+  db_data:
+    driver: local
   
